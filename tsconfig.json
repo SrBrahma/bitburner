@@ -1,0 +1,34 @@
+{
+  "include": ["NetscriptDefinitions.d.ts", "src/**/*"],
+  "compilerOptions": {
+    "types": ["bun-types"],
+    "module": "esnext",
+    "target": "esnext",
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+    "noUncheckedIndexedAccess": true,
+    "inlineSources": true,
+    "strict": true,
+    "rootDir": "src/",
+    "outDir": "dist/",
+    "baseUrl": "src/",
+    "allowJs": true,
+    "jsx": "react",
+    "paths": {
+      "/*": ["*"],
+      "@ns": ["../NetscriptDefinitions.d.ts"],
+      "@react": ["scripts/lib/react.ts"]
+    },
+    "lib": ["esnext"],
+
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}

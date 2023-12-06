@@ -1,0 +1,30 @@
+{
+  "name": "bitburner-typescript-template",
+  "version": "2.0.0",
+  "scripts": {
+    "watch:transpile": "bun --watch",
+    "watch:local": "bun build/watch.js",
+    "watch:remote": "bitburner-filesync",
+    "watch:init": "bun build/init.js",
+    "test:watch": "bun test --watch",
+    "watch:all": "concurrently -c \"bun watch:transpile\" \"bun watch:local\" \"bun watch:remote\"",
+    "watch": "bun watch:init && bun watch:all"
+  },
+  "author": "hydroflame, Hoekstraa, based on work by SlyCedix",
+  "devDependencies": {
+    "@total-typescript/ts-reset": "^0.5.1",
+    "@types/react": "^18.2.18",
+    "@types/react-dom": "^18.2.7",
+    "bitburner-filesync": "^1.1.5",
+    "bun-types": "^1.0.15",
+    "chokidar": "^3.5.3",
+    "concurrently": "^7.4.0",
+    "eslint-config-gev": "^3.7.0",
+    "fast-glob": "^3.2.12",
+    "prettier": "^3.1.0",
+    "prettier-config-gev": "^1.1.3",
+    "sync-directory": "^5.1.7",
+    "typescript": "^5.3.2"
+  },
+  "prettier": "prettier-config-gev"
+}
