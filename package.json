@@ -7,6 +7,9 @@
     "watch:remote": "bitburner-filesync",
     "watch:init": "bun build/init.js",
     "test:watch": "bun test --watch",
+    "prettier:write": "prettier --write --log-level warn .",
+    "lint:write": "eslint --fix .",
+    "format": "bun lint:write && bun prettier:write",
     "watch:all": "concurrently -c \"bun watch:transpile\" \"bun watch:local\" \"bun watch:remote\"",
     "watch": "bun watch:init && bun watch:all"
   },

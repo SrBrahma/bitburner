@@ -12,13 +12,14 @@ const normalize = (p) => p.replace(/\\/g, '/');
  * Sync static files.
  * Include init and watch phase.
  */
-const syncStatic = async () => syncDirectory.async(path.resolve(src), path.resolve(dist), {
+const syncStatic = () =>
+  syncDirectory.async(path.resolve(src), path.resolve(dist), {
     exclude: (file) => {
       const { ext } = path.parse(file);
 
       return ext && !allowedFiletypes.includes(ext);
     },
-    afterEachSync: async (event) => {
+    afterEachSync: (event) => {
       // log file action
       let eventType;
 
@@ -53,10 +54,7 @@ const initTypeScript = async () => {
     const srcFile = path.resolve(src, relative);
 
     // if srcFile does not exist, delete distFile
-    if (
-      !fs.existsSync(srcFile) &&
-      !fs.existsSync(srcFile.replace(/\.js$/, '.ts'))
-    ) {
+    if (!fs.existsSync(srcFile) && !fs.existsSync(srcFile.replace(/\.js$/, '.ts'))) {
       await fs.promises.unlink(distFile);
       console.log(`${normalize(relative)} deleted`);
     }
@@ -67,7 +65,7 @@ const initTypeScript = async () => {
  * Sync ts script files.
  * Watch phase only.
  */
-const watchTypeScript = async () => {
+const watchTypeScript = () => {
   chokidar.watch(`${src}/**/*.ts`).on('unlink', async (p) => {
     // called on *.ts file get deleted
     const relative = path.relative(src, p).replace(/\.ts$/, '.js');

@@ -1,26 +1,26 @@
-import type { AutocompleteData, NS } from '@ns';
+import { program } from 'scripts/lib/program/program';
 import { runSuperSchedule } from 'scripts/lib/schedule';
 import { Server } from 'scripts/lib/server';
 import { Servers } from 'scripts/lib/servers';
 import { getHWGWSteps } from 'scripts/lib/steps';
-import type { Args } from 'scripts/lib/types';
-import { ns, printTable, setNs } from 'scripts/lib/utils';
+import { ns, printTable } from 'scripts/lib/utils';
 
-export const main = async (ns_: NS) => {
-  setNs(ns_);
+export const { main, path } = program({
+  path: 'scripts/all.ts',
+  main: async () => {
+    const modes = getModes();
 
-  const modes = getModes();
+    const mode = String(ns.args[0] ?? 'list');
+    const fun = modes[mode];
 
-  const mode = String(ns.args[0] ?? 'list');
-  const fun = modes[mode];
+    if (!fun) {
+      ns.tprint('ERROR: invalid mode. Available modes are: ', Object.keys(modes));
+      ns.exit();
+    }
 
-  if (!fun) {
-    ns.tprint('ERROR: invalid mode. Available modes are: ', Object.keys(modes));
-    ns.exit();
-  }
-
-  await fun();
-};
+    await fun();
+  },
+});
 
 const getModes = (): Record<string, () => void | Promise<void>> => {
   const { servers, serversButHome } = Servers.getAllServers();
@@ -145,4 +145,4 @@ const getModes = (): Record<string, () => void | Promise<void>> => {
 //   await ns.asleep(ns.getWeakenTime(host) + 1);
 // };
 
-export const autocomplete = (data: AutocompleteData, args: Args) => Object.keys(getModes());
+export const autocomplete = () => Object.keys(getModes());

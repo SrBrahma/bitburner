@@ -1,4 +1,7 @@
 import { getCommonFunction } from 'scripts/lib/program/growHackWeakenCommon';
 import { ns } from 'scripts/lib/utils';
 
-export const { main, autocomplete } = getCommonFunction(ns.grow);
+export const { main, autocomplete, exec, path } = getCommonFunction({
+  fun: ns.grow,
+  path: 'scripts/grow',
+});

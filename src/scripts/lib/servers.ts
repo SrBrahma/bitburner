@@ -19,8 +19,8 @@ export const Servers = {
 
   getAvailableRam: (servers: ServersList) =>
     Servers.getRoots(servers).reduce((ram, host) => ram + ns.getServerMaxRam(host), 0),
-  getBestServer: (servers?: ServersList) => {
-    Servers.servers;
+  getBestServer: (_: ServersList) => {
+    _;
 
     return 'phantasy';
   },

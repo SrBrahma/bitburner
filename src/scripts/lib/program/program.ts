@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { printHelp } from 'scripts/lib/program/help';
-import type { Args } from 'scripts/lib/types';
-import { ns, setNs } from 'scripts/lib/utils';
-import type { AutocompleteData, NS } from '../../../../NetscriptDefinitions';
+import { getArgsString, parseInput } from 'scripts/lib/program/utils';
+import { errorExitWithHelp, ns, setNs } from 'scripts/lib/utils';
+import type { AutocompleteData, NS, RunOptions } from '../../../../NetscriptDefinitions';
 
 type Argument = {
   description?: string;
@@ -12,7 +12,7 @@ type Argument = {
 
 type Empty = Record<string, never>;
 
-type Arguments = Record<string, Argument>;
+export type Arguments = Record<string, Argument>;
 
 export type Option = {
   description?: string;
@@ -35,9 +35,9 @@ export type Option = {
     }
 );
 
-type Options = Record<string, Option>;
+export type Options = Record<string, Option>;
 
-type GetTypes<T extends Arguments | Options> = {
+export type GetArgumentsTypes<T extends Arguments> = {
   [K in keyof T]: T[K]['type'] extends 'boolean'
     ? boolean
     : T[K]['type'] extends 'string'
@@ -47,9 +47,19 @@ type GetTypes<T extends Arguments | Options> = {
         : unknown;
 };
 
+export type GetOptionsTypes<T extends Options> = {
+  [K in keyof T]?: T[K]['type'] extends 'boolean'
+    ? boolean
+    : T[K]['type'] extends 'string'
+      ? string
+      : T[K]['type'] extends 'number'
+        ? number
+        : unknown;
+};
+
 export type MainProps<A extends Arguments = Arguments, O extends Options = Options> = {
-  args: GetTypes<A>;
-  options: Partial<GetTypes<O>>;
+  args: GetArgumentsTypes<A>;
+  options: GetOptionsTypes<O>;
 };
 
 export type ProgramProps<
@@ -58,6 +68,7 @@ export type ProgramProps<
   R = unknown,
 > = {
   /**
+   * The order of the arguments is the same as how they are defined on the object.
    * @example (cp) `<source> <destination>`
    */
   args?: A;
@@ -66,6 +77,14 @@ export type ProgramProps<
    */
   options?: O;
   main: MainType<A, O, R>;
+  /**
+   * The path from the server's root ('/') to the program file.
+   *
+   * Used in the program's returning .exec and also returned by program() for further usages.
+   * @example 'scripts/hack.js'
+   */
+  path?: string;
+  /** The description of this program. Shown on --help. */
   description?: string;
 };
 
@@ -78,61 +97,30 @@ export type GetMainFromProps<T extends Pick<ProgramProps, 'args' | 'options'>> =
   T['options'] extends Options ? T['options'] : Empty
 >;
 
-// eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
-function errorExitWithHelp(errorMessage: string, props: ProgramProps<any, any, any>): never {
-  ns.tprint('ERROR: ' + errorMessage + '\n');
-  printHelp(props);
-  ns.exit();
-}
-
-const isValidNumber = (value: unknown) =>
-  typeof value === 'number'
-    ? true
-    : typeof value !== 'string'
-      ? false
-      : !isNaN(value as any) && !isNaN(parseFloat(value));
-
-const parseInput = ({
-  input,
-  type,
-  mode,
-  name,
-  programProps,
-}: {
-  input: string | number | boolean;
-  type: 'string' | 'number';
-  name: string;
-  mode: 'option' | 'argument';
-  programProps: ProgramProps<any, any, any>;
-}): string | number => {
-  switch (type) {
-    case 'string':
-      return String(input);
-    case 'number': {
-      if (!isValidNumber(input))
-        errorExitWithHelp(
-          `Expected a valid number for the ${mode} "${name}" but received "${input}".`,
-          programProps,
-        );
-
-      return Number(input);
-    }
-  }
-};
-
 type ExpectedOption<O extends Options = Options> = { name: keyof O & string } & Omit<
   Option,
   'type'
 > & { type: Exclude<Option['type'], 'boolean'> };
 
-type ProgramReturn<R = unknown> = {
-  main: (ns: NS) => R | void;
-  autocomplete: (data: AutocompleteData, args: Args) => Array<string>;
+type ExecProps<A extends Arguments, O extends Options> = MainProps<A, O> & {
+  /** @default 'home' */
+  hostname?: string;
+  threadOrOptions?: number | RunOptions;
 };
+
+export type Exec<A extends Arguments = Arguments, O extends Options = Options> = (
+  props: ExecProps<A, O>,
+) => number;
+
+export type Program<A extends Arguments = Arguments, O extends Options = Options, R = unknown> = {
+  main: (ns: NS) => R | void;
+  autocomplete: (data: AutocompleteData, args: Array<string | number>) => Array<string>;
+  exec: Exec<A, O>;
+} & Required<Pick<ProgramProps, 'path'>>;
 
 export const program = <A extends Arguments, O extends Options, R = unknown>(
   props: ProgramProps<A, O, R>,
-): ProgramReturn<R> => {
+): Program<A, O, R> => {
   const extendedProps = {
     ...props,
     options: {
@@ -140,7 +128,7 @@ export const program = <A extends Arguments, O extends Options, R = unknown>(
       help: {
         type: 'boolean',
         alias: 'h',
-        description: 'Display the help',
+        description: 'Display the help.',
       },
     } as unknown as O,
   };
@@ -158,8 +146,8 @@ export const program = <A extends Arguments, O extends Options, R = unknown>(
   const main = (ns: NS) => {
     setNs(ns);
 
-    const resultingArguments: Partial<GetTypes<A>> = {};
-    const resultingOptions: Partial<GetTypes<O>> = {};
+    const resultingArguments: Partial<GetArgumentsTypes<A>> = {};
+    const resultingOptions: Partial<GetOptionsTypes<O>> = {};
     const remainingArguments = [...argumentsArray];
     let expectedOptArg: ExpectedOption<O> | null = null;
 
@@ -231,15 +219,29 @@ export const program = <A extends Arguments, O extends Options, R = unknown>(
       errorExitWithHelp(`Missing value for the option "${expectedOptArg.name}".`, extendedProps);
 
     return extendedProps.main({
-      args: resultingArguments as GetTypes<A>,
-      options: resultingOptions as GetTypes<O>,
+      args: resultingArguments as GetArgumentsTypes<A>,
+      options: resultingOptions as GetOptionsTypes<O>,
     });
   };
 
+  const path = extendedProps.path ?? 'Define path property to use .exec';
+
   return {
     main,
+    path,
     // TODO. Shouldn't be hard.
-    autocomplete: (data, args) => [],
+    autocomplete: () => [],
+    exec: (execProps) =>
+      ns.exec(
+        path,
+        execProps.hostname ?? 'home',
+        execProps.threadOrOptions,
+        getArgsString({
+          args: execProps.args,
+          options: execProps.options,
+          originalArgs: extendedProps.args ?? {},
+        }),
+      ),
   };
 };
 

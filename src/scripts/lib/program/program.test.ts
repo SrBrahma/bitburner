@@ -46,12 +46,12 @@ const stringAndNumberOptions = {
   name: {
     type: 'string',
     alias: 'n',
-    description: 'Some cool description',
+    description: 'Some cool description.',
   },
   value: {
     type: 'number',
     alias: 'v',
-    description: 'An even cooler description',
+    description: 'An even cooler description.',
   },
 } satisfies ProgramProps['options'];
 
@@ -75,11 +75,11 @@ test('parse string and number options', () => {
 const twoArguments = {
   source: {
     type: 'string',
-    description: 'The path of the file you are copying',
+    description: 'The path of the file you are copying.',
   },
   destination: {
     type: 'string',
-    description: 'The path where the file should be copied to',
+    description: 'The path where the file should be copied to.',
   },
 } satisfies ProgramProps['args'];
 
@@ -148,6 +148,6 @@ Options:
   // .toHaveBeenCalledWith error message isn't as good as .toBe. This saves time when text doesn't match.
   expect(weGot).toBe(text);
   weGot = undefined as string | undefined;
-  myProgram.main(mockNs({ args: ['-h'] }));
+  myProgram.main(mockNs({ args: ['-h'], tprint }));
   expect(weGot).toBe(text);
 });

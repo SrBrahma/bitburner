@@ -27,6 +27,6 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['/lib/**/*', '/dist/**/*'],
+  ignorePatterns: ['/lib/**/*', '/dist/**/*', '/NetscriptDefinitions.d.ts'],
   rules: {},
 };

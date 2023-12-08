@@ -1,70 +1,21 @@
-import type { Obj } from 'scripts/lib/types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as growProgram from 'scripts/grow';
+import * as hackProgram from 'scripts/hack';
+import type { Program } from 'scripts/lib/program/program';
 import { ns } from 'scripts/lib/utils';
+import * as weakenProgram from 'scripts/weaken';
 
-type ExecProps = Obj;
-
-type ScriptInput<T extends ExecProps = ExecProps> = {
-  path: string;
-  exec: (initProps: { script: string }) => (props: T) => number;
-};
-
-type Script<T extends ExecProps> = Omit<ScriptInput<T>, 'exec'> & {
+type Script<T extends Program> = Pick<T, 'exec' | 'path'> & {
   ram: (threads: number) => number;
-  exec: (props: T) => number;
 };
 
-const getScript = <T extends ExecProps>(props: ScriptInput<T>): Script<T> => ({
+const getScript = <T extends Program<any, any, any>>(props: T): Script<T> => ({
   ...props,
-  ram: (threads): number => ns.getScriptRam(scripts.hack.path) * threads,
-  exec: props.exec({ script: props.path }),
+  ram: (threads: number): number => ns.getScriptRam(props.path) * threads,
 });
 
-type CommonExecProps = {
-  /** @default 'home' */
-  host?: string;
-  threads: number;
-  target: string;
-  delayMs?: number;
-};
-
 export const scripts = {
-  hack: getScript({
-    path: 'scripts/hack.js',
-    exec:
-      ({ script }) =>
-      (props: CommonExecProps) =>
-        ns.exec(
-          script,
-          (props.host = 'home'),
-          { threads: props.threads },
-          props.target,
-          (props.delayMs = 0),
-        ),
-  }),
-  grow: getScript({
-    path: 'scripts/grow.js',
-    exec:
-      ({ script }) =>
-      (props: CommonExecProps) =>
-        ns.exec(
-          script,
-          (props.host = 'home'),
-          { threads: props.threads },
-          props.target,
-          (props.delayMs = 0),
-        ),
-  }),
-  weaken: getScript({
-    path: 'scripts/weaken.js',
-    exec:
-      ({ script }) =>
-      (props: CommonExecProps) =>
-        ns.exec(
-          script,
-          (props.host = 'home'),
-          { threads: props.threads },
-          props.target,
-          (props.delayMs = 0),
-        ),
-  }),
+  grow: getScript(growProgram),
+  weaken: getScript(weakenProgram),
+  hack: getScript(hackProgram),
 };

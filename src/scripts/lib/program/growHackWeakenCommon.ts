@@ -1,13 +1,20 @@
 import { program } from 'scripts/lib/program/program';
 import { ns } from 'scripts/lib/utils';
 
-export const getCommonFunction = (innerFun: typeof ns.weaken | typeof ns.hack | typeof ns.grow) =>
+export const getCommonFunction = ({
+  fun,
+  path,
+}: {
+  fun: typeof ns.weaken | typeof ns.hack | typeof ns.grow;
+  path: string;
+}) =>
   program({
+    path,
     main: async ({ args, options }) => {
       if (options.times && options.times < 0) ns.tprint('ERROR: times arg must be >= 0.');
 
       for (let i = options.times || Infinity; i > 0; i--)
-        await innerFun(args.target, { additionalMsec: options.delay });
+        await fun(args.target, { additionalMsec: options.delay });
     },
     args: {
       target: {
@@ -24,7 +31,6 @@ export const getCommonFunction = (innerFun: typeof ns.weaken | typeof ns.hack | 
       },
       times: {
         type: 'number',
-        argumentName: 'number',
         description: 'How many times to run it. If 0, run indefinitely.',
       },
     },

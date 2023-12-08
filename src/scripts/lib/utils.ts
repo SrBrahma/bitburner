@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NS } from '@ns';
+import { printHelp } from 'scripts/lib/program/help';
+import type { ProgramProps } from 'scripts/lib/program/program';
 
 export let ns: NS;
 
@@ -26,3 +29,11 @@ export const printTable = (data: Array<Array<string | number>>): void => {
 };
 
 export const getThreadsToWeaken = (security: number) => Math.ceil(security / 0.05);
+// eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
+
+// eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
+export function errorExitWithHelp(errorMessage: string, props: ProgramProps<any, any, any>): never {
+  ns.tprint('ERROR: ' + errorMessage + '\n');
+  printHelp(props);
+  ns.exit();
+}
