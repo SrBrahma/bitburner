@@ -11,3 +11,26 @@ My codes for [BitBurner](https://store.steampowered.com/app/1812820/Bitburner/) 
 ### Note
 As the template guide says:
 > If the terminal shows error TS2307: Cannot find module '@ns' or its corresponding type declarations. (or see the same error at your editor), it is fine. The missing type declaration NetscriptDefinitions.d.ts will be downloaded from the game once connected.
+
+## src/scripts/lib/program.ts
+
+This is a util function that quickly creates a CLI program with typed arguments and options support and returns the `main` and `autocomplete` functions, consumed by BitBurner.
+
+Your programs will automatically have `--help` options that will print its description, arguments and options:
+
+```bash
+This is a cool program that does cool stuff.
+
+Usage: $SCRIPT_NAME [options] <source> <destination>
+
+Arguments:
+
+  source                 The path of the file you are copying.
+  destination            The path where the file should be copied to.
+
+Options:
+
+  --name, -n <string>    Some cool description.
+  --value, -v <number>   An even cooler description.
+  --help, -h             Display the help.
+```
