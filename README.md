@@ -1,6 +1,6 @@
 ## About
 
-My codes for [BitBurner](https://store.steampowered.com/app/1812820/Bitburner/). Still WIP.
+My codes for [BitBurner](https://store.steampowered.com/app/1812820/Bitburner/) that I have some fun with in my spare time. Still WIP.
 
 ## Quick start
 
