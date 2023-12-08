@@ -3,7 +3,7 @@ import type { MainProps, ProgramProps } from 'scripts/lib/program/program';
 import { program } from 'scripts/lib/program/program';
 import type { NS } from '../../../../NetscriptDefinitions';
 
-const getNs = (props: Partial<NS>) =>
+const mockNs = (props: Partial<NS>) =>
   ({
     tprint: console.log,
     getScriptName: () => '$SCRIPT_NAME',
@@ -13,15 +13,16 @@ const getNs = (props: Partial<NS>) =>
     ...props,
   }) as Partial<NS> as NS;
 
+const mainReturnProps = jest.fn((mainProps: MainProps) => mainProps);
+
 test('simple main body should be called', () => {
-  const fun = jest.fn();
   const myProgram = program({
-    main: fun,
+    main: mainReturnProps,
   });
 
-  expect(fun).toHaveBeenCalledTimes(0);
-  myProgram.main(getNs({ args: [] }));
-  expect(fun).toHaveBeenCalledTimes(1);
+  expect(mainReturnProps).toHaveBeenCalledTimes(0);
+  myProgram.main(mockNs({ args: [] }));
+  expect(mainReturnProps).toHaveBeenCalledTimes(1);
 });
 
 const booleanProgramOptions = {
@@ -31,16 +32,14 @@ const booleanProgramOptions = {
   },
 } satisfies ProgramProps['options'];
 
-const mainReturnProps = jest.fn((mainProps: MainProps) => mainProps);
-
 test('parse boolean option', () => {
   const myProgram = program({
     options: booleanProgramOptions,
     main: mainReturnProps,
   });
 
-  expect(myProgram.main(getNs({ args: ['--check'] }))?.options).toStrictEqual({ check: true });
-  expect(myProgram.main(getNs({ args: ['-c'] }))?.options).toStrictEqual({ check: true });
+  expect(myProgram.main(mockNs({ args: ['--check'] }))?.options).toStrictEqual({ check: true });
+  expect(myProgram.main(mockNs({ args: ['-c'] }))?.options).toStrictEqual({ check: true });
 });
 
 const stringAndNumberOptions = {
@@ -62,17 +61,15 @@ test('parse string and number options', () => {
     main: mainReturnProps,
   });
 
-  expect(myProgram.main(getNs({ args: ['--name', 'abc', '--value', '5'] }))?.options).toStrictEqual(
-    {
-      name: 'abc',
-      value: 5,
-    },
-  );
-
-  expect(myProgram.main(getNs({ args: ['-n', 'abc', '-v', 5] }))?.options).toStrictEqual({
+  const expected = {
     name: 'abc',
     value: 5,
-  });
+  };
+
+  expect(
+    myProgram.main(mockNs({ args: ['--name', 'abc', '--value', '5'] }))?.options,
+  ).toStrictEqual(expected);
+  expect(myProgram.main(mockNs({ args: ['-n', 'abc', '-v', 5] }))?.options).toStrictEqual(expected);
 });
 
 const twoArguments = {
@@ -92,7 +89,7 @@ test('parse argument', () => {
     main: mainReturnProps,
   });
 
-  expect(myProgram.main(getNs({ args: ['./src', './dist'] }))?.args).toStrictEqual({
+  expect(myProgram.main(mockNs({ args: ['./src', './dist'] }))?.args).toStrictEqual({
     source: './src',
     destination: './dist',
   });
@@ -105,19 +102,21 @@ test('parse all', () => {
     main: mainReturnProps,
   });
 
-  expect(myProgram.main(getNs({ args: ['-n', 'abc', './src', './dist', '-v', 5] }))).toStrictEqual({
-    args: {
-      source: './src',
-      destination: './dist',
+  expect(myProgram.main(mockNs({ args: ['-n', 'abc', './src', './dist', '-v', 5] }))).toStrictEqual(
+    {
+      args: {
+        source: './src',
+        destination: './dist',
+      },
+      options: {
+        name: 'abc',
+        value: 5,
+      },
     },
-    options: {
-      name: 'abc',
-      value: 5,
-    },
-  });
+  );
 });
 
-test('have --help and -h and display the help', () => {
+test('have --help and -h options and display the help', () => {
   const myProgram = program({
     description: 'This is a cool program that does cool stuff.',
     args: twoArguments,
@@ -145,10 +144,10 @@ Options:
   --help, -h             Display the help.
 `;
 
-  myProgram.main(getNs({ args: ['--help'], tprint }));
+  myProgram.main(mockNs({ args: ['--help'], tprint }));
   // .toHaveBeenCalledWith error message isn't as good as .toBe. This saves time when text doesn't match.
   expect(weGot).toBe(text);
   weGot = undefined as string | undefined;
-  myProgram.main(getNs({ args: ['-h'] }));
+  myProgram.main(mockNs({ args: ['-h'] }));
   expect(weGot).toBe(text);
 });
