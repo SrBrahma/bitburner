@@ -101,9 +101,8 @@ const getModes = (): Record<string, () => void | Promise<void>> => {
       const target = Servers.getBestServer(serversButHome);
 
       ns.tprint('Ensuring Security & Grow are on the optimal levels...');
-      // const requiredGrow
-      await Server.setSecurityToMin({ target });
-      // setGrowToMax // TODO
+      await Server.prepareServerForHack(target);
+
       ns.tprint('Setting up processes...');
       const steps = getHWGWSteps({ target, percentageToHack: 0.1 });
 
@@ -138,11 +137,5 @@ const getModes = (): Record<string, () => void | Promise<void>> => {
     seed: () => Servers.seed(serversButHome),
   };
 };
-
-// const setGrowToMax = async (host: string) => {
-//   const deltaGrow = ns.getServerGrowth(host) - ns.getServerMinSecurityLevel(host)
-//   ns.run(scripts.weaken.path, {threads: ns.grow(deltaSecurity)})
-//   await ns.asleep(ns.getWeakenTime(host) + 1);
-// };
 
 export const autocomplete = () => Object.keys(getModes());

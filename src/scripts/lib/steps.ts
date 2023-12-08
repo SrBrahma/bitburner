@@ -1,5 +1,6 @@
 import { scripts } from 'scripts/lib/scripts';
-import { getThreadsToWeaken, ns } from 'scripts/lib/utils';
+import { Server } from 'scripts/lib/server';
+import { ns } from 'scripts/lib/utils';
 
 export type StepData = {
   threads: number;
@@ -26,29 +27,29 @@ export const getHWGWSteps = ({
     Math.ceil(ns.growthAnalyze(target, 1 / (1 - percentageToHack)) * safeMult),
   );
   const threadsToHack = Math.max(1, Math.floor(ns.hackAnalyzeThreads(target, moneyToHack)));
-  const threadsWeakenGrow = getThreadsToWeaken(0.004 * threadsToGrow * safeMult);
-  const threadsWeakenHack = getThreadsToWeaken(0.002 * threadsToHack * safeMult);
+  const threadsWeakenGrow = Server.getThreadsToWeaken(0.004 * threadsToGrow * safeMult);
+  const threadsWeakenHack = Server.getThreadsToWeaken(0.002 * threadsToHack * safeMult);
 
   return {
     grow: {
       threads: threadsToGrow,
       timeMs: ns.getGrowTime(target),
-      ram: scripts.grow.ram(threadsToGrow),
+      ram: scripts.grow.ramForThreads(threadsToGrow),
     },
     hack: {
       threads: threadsToHack,
       timeMs: ns.getHackTime(target),
-      ram: scripts.hack.ram(threadsToHack),
+      ram: scripts.hack.ramForThreads(threadsToHack),
     },
     weakenGrow: {
       threads: threadsWeakenGrow,
       timeMs: ns.getWeakenTime(target),
-      ram: scripts.weaken.ram(threadsWeakenGrow),
+      ram: scripts.weaken.ramForThreads(threadsWeakenGrow),
     },
     weakenHack: {
       threads: threadsWeakenHack,
       timeMs: ns.getWeakenTime(target),
-      ram: scripts.weaken.ram(threadsWeakenHack),
+      ram: scripts.weaken.ramForThreads(threadsWeakenHack),
     },
   };
 };

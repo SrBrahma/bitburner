@@ -67,7 +67,7 @@ export const runSuperSchedule = async ({
   steps: HWGWSteps;
   serversButHome: ServersList;
 }) => {
-  const delayMs = 10;
+  const delayMs = 5;
   const longestTime = steps.weakenHack.timeMs;
 
   const scheduledStepi = getScheduledSteps({ serversButHome, steps });
@@ -76,34 +76,44 @@ export const runSuperSchedule = async ({
 
   for (const scheduledSteps of scheduledStepi) {
     scripts.weaken.exec({
-      host: scheduledSteps.weakenHack.host,
-      target,
-      threads: scheduledSteps.weakenHack.threads,
-      delayMs: 0,
+      hostname: scheduledSteps.weakenHack.host,
+      args: {
+        target,
+      },
+      threadOrOptions: scheduledSteps.weakenHack.threads,
     });
     await ns.sleep(delayMs);
 
     scripts.grow.exec({
-      host: scheduledSteps.grow.host,
-      target,
-      threads: scheduledSteps.grow.threads,
-      delayMs: longestTime - scheduledSteps.grow.timeMs,
+      hostname: scheduledSteps.grow.host,
+      args: {
+        target,
+      },
+      threadOrOptions: scheduledSteps.grow.threads,
+      options: {
+        delay: longestTime - scheduledSteps.grow.timeMs,
+      },
     });
     await ns.sleep(delayMs);
 
     scripts.weaken.exec({
-      host: scheduledSteps.weakenGrow.host,
-      target,
-      threads: scheduledSteps.weakenGrow.threads,
-      delayMs: 0,
+      hostname: scheduledSteps.weakenGrow.host,
+      args: {
+        target,
+      },
+      threadOrOptions: scheduledSteps.weakenGrow.threads,
     });
     await ns.sleep(delayMs);
 
     scripts.weaken.exec({
-      host: scheduledSteps.weakenGrow.host,
-      target,
-      threads: scheduledSteps.weakenGrow.threads,
-      delayMs: longestTime - scheduledSteps.hack.timeMs,
+      hostname: scheduledSteps.weakenGrow.host,
+      args: {
+        target,
+      },
+      options: {
+        delay: longestTime - scheduledSteps.hack.timeMs,
+      },
+      threadOrOptions: scheduledSteps.weakenGrow.threads,
     });
     await ns.sleep(delayMs);
   }

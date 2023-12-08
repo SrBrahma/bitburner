@@ -28,9 +28,6 @@ export const printTable = (data: Array<Array<string | number>>): void => {
   ns.tprint(result);
 };
 
-export const getThreadsToWeaken = (security: number) => Math.ceil(security / 0.05);
-// eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
-
 // eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
 export function errorExitWithHelp(errorMessage: string, props: ProgramProps<any, any, any>): never {
   ns.tprint('ERROR: ' + errorMessage + '\n');

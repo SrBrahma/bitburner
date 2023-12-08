@@ -1,42 +1,76 @@
 import { scripts } from 'scripts/lib/scripts';
-import { getThreadsToWeaken, ns } from 'scripts/lib/utils';
+import { ns } from 'scripts/lib/utils';
 
 export class Server {
-  static setSecurityToMin = async ({
-    target,
-    additional = 0,
-  }: {
-    target: string;
-    additional?: number;
-  }) => {
-    const deltaSecurity =
-      ns.getServerSecurityLevel(target) - ns.getServerMinSecurityLevel(target) + additional;
+  // TODO gather servers to run it together
+  static setSecurityToMin = async (props: { target: string; additional?: number }) => {
+    while (true) {
+      const threadsToWeakenToMin = Server.threadsToWeakenToMin(props.target);
 
-    if (deltaSecurity > 0) {
-      const threadsToWeaken = getThreadsToWeaken(deltaSecurity);
-      const timeToWeaken = ns.getWeakenTime(target);
+      if (threadsToWeakenToMin <= 0) return;
+
+      const threads = Math.min(
+        Server.availableThreads({
+          scriptRam: scripts.weaken.ram,
+          host: 'home',
+        }),
+        threadsToWeakenToMin,
+      );
+      const executionTime = ns.getWeakenTime(props.target);
 
       ns.tprint(
-        `Security delta is ${deltaSecurity}. Using ${threadsToWeaken} threads to set it to the minimum. Will take ${ns.tFormat(
-          timeToWeaken,
+        `Using ${threads} threads to lower the security (requires a total of ${threadsToWeakenToMin}). This will take ${ns.tFormat(
+          executionTime,
         )}.`,
       );
-      const process = ns.run(scripts.weaken.path, { threads: threadsToWeaken }, target);
 
-      if (process === -1) {
-        ns.tprint(`ERROR: Couldn't start weaken process. Missing RAM.`);
-        ns.exit();
-      }
-      await ns.sleep(ns.getWeakenTime(target) + 10);
-      while (ns.getRunningScript(process)) {
-        const delay = 100;
-
-        ns.tprint(
-          `WARNING: The weaken script is still running after the expected time! Waiting more ${delay}ms.`,
-        );
-        await ns.sleep(delay);
-      }
+      await scripts.weaken.execAsync(
+        {
+          args: { target: props.target },
+          threadOrOptions: threads,
+        },
+        executionTime,
+      );
     }
+  };
+
+  static setGrowToMax = async (props: { target: string }) => {
+    while (true) {
+      const threadsToGrowToMax = Server.threadsToGrowToMax(props.target);
+
+      if (threadsToGrowToMax <= 0) return;
+
+      const threads = Math.min(
+        Server.availableThreads({
+          scriptRam: scripts.grow.ram,
+          host: 'home',
+        }),
+        threadsToGrowToMax,
+      );
+      const executionTime = ns.getGrowTime(props.target);
+
+      ns.tprint(
+        `Using ${threads} threads to lower the security (requires a total of ${threadsToGrowToMax}). This will take ${ns.tFormat(
+          executionTime,
+        )}.`,
+      );
+
+      await scripts.grow.execAsync(
+        {
+          args: { target: props.target },
+          threadOrOptions: threads,
+        },
+        executionTime,
+      );
+    }
+  };
+
+  // TODO can be improved
+  // 1) we could run weaken with the extra threads required by
+  static prepareServerForHack = async (target: string): Promise<void> => {
+    await Server.setSecurityToMin({ target });
+    await Server.setGrowToMax({ target });
+    await Server.setSecurityToMin({ target });
   };
 
   /** Returns true if already had root or it was now adquired. */
@@ -62,4 +96,26 @@ export class Server {
 
     return true;
   };
+
+  static threadsToGrowToMax = (target: string): number => {
+    const multiplier = Server.getMoneyMultDelta(target) * 1.001;
+
+    return Math.max(0, Math.ceil(ns.growthAnalyze(target, multiplier)));
+  };
+
+  static getSecurityDelta = (target: string) =>
+    ns.getServerSecurityLevel(target) - ns.getServerMinSecurityLevel(target);
+
+  static getMoneyMultDelta = (target: string) =>
+    ns.getServerMaxMoney(target) / ns.getServerMoneyAvailable(target);
+
+  static threadsToWeakenToMin = (target: string): number =>
+    Server.getThreadsToWeaken(Server.getSecurityDelta(target));
+
+  static getThreadsToWeaken = (security: number) => Math.ceil(security / 0.05);
+
+  static availableRam = (host: string) => ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
+
+  static availableThreads = (props: { scriptRam: number; host: string }) =>
+    Math.floor(Server.availableRam(props.host) / props.scriptRam);
 }

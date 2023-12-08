@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { printHelp } from 'scripts/lib/program/help';
 import { getArgsString, parseInput } from 'scripts/lib/program/utils';
+import type { OptionalKey } from 'scripts/lib/types';
 import { errorExitWithHelp, ns, setNs } from 'scripts/lib/utils';
 import type { AutocompleteData, NS, RunOptions } from '../../../../NetscriptDefinitions';
 
@@ -102,7 +103,7 @@ type ExpectedOption<O extends Options = Options> = { name: keyof O & string } & 
   'type'
 > & { type: Exclude<Option['type'], 'boolean'> };
 
-type ExecProps<A extends Arguments, O extends Options> = MainProps<A, O> & {
+type ExecProps<A extends Arguments, O extends Options> = OptionalKey<MainProps<A, O>, 'options'> & {
   /** @default 'home' */
   hostname?: string;
   threadOrOptions?: number | RunOptions;
@@ -238,7 +239,7 @@ export const program = <A extends Arguments, O extends Options, R = unknown>(
         execProps.threadOrOptions,
         getArgsString({
           args: execProps.args,
-          options: execProps.options,
+          options: execProps.options ?? {},
           originalArgs: extendedProps.args ?? {},
         }),
       ),
