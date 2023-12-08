@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { printHelp } from 'scripts/lib/program/help';
 import type { Args } from 'scripts/lib/types';
 import { ns, setNs } from 'scripts/lib/utils';
-import type { AutocompleteData, NS } from '../../../NetscriptDefinitions';
-
-// type Command = {
-//   description: string;
-//   arguments: Array<Argument>;
-//   options: Array<Option>;
-// };
+import type { AutocompleteData, NS } from '../../../../NetscriptDefinitions';
 
 type Argument = {
   description?: string;
@@ -19,7 +14,7 @@ type Empty = Record<string, never>;
 
 type Arguments = Record<string, Argument>;
 
-type Option = {
+export type Option = {
   description?: string;
   alias?: string;
 } & (
@@ -29,20 +24,20 @@ type Option = {
     }
   | {
       /** The type of the option. */
+      // TODO add 'server'
       type: 'string' | 'number';
       /**
        * How is the option's argument called. Used in the help.
-       * @example The "maxValue" in `--max <maxValue>`
-       * @default value
+       * Defaults to the type of the option, such as `<string>`.
+       * @example "maxValue" in `--max, -m <maxValue>`
        */
-      // TODO default should be 'string' or 'number' deppending on `type`
       argumentName?: string;
     }
 );
 
 type Options = Record<string, Option>;
 
-type GetNamesAndTypes<T extends Arguments | Options> = {
+type GetTypes<T extends Arguments | Options> = {
   [K in keyof T]: T[K]['type'] extends 'boolean'
     ? boolean
     : T[K]['type'] extends 'string'
@@ -53,8 +48,8 @@ type GetNamesAndTypes<T extends Arguments | Options> = {
 };
 
 export type MainProps<A extends Arguments = Arguments, O extends Options = Options> = {
-  arguments: GetNamesAndTypes<A>;
-  options: GetNamesAndTypes<O>;
+  args: GetTypes<A>;
+  options: Partial<GetTypes<O>>;
 };
 
 export type ProgramProps<
@@ -65,31 +60,28 @@ export type ProgramProps<
   /**
    * @example (cp) `<source> <destination>`
    */
-  arguments?: A;
+  args?: A;
   /**
    * @example `--foo`, `-f`, `--foo <bar>`
    */
   options?: O;
   main: MainType<A, O, R>;
+  description?: string;
 };
 
 type MainType<A extends Arguments = Arguments, O extends Options = Options, R = unknown> = (
   props: MainProps<A, O>,
-) => R;
+) => R | void;
 
-export type GetMainFromProps<T extends Pick<ProgramProps, 'arguments' | 'options'>> = MainType<
-  T['arguments'] extends Arguments ? T['arguments'] : Empty,
+export type GetMainFromProps<T extends Pick<ProgramProps, 'args' | 'options'>> = MainType<
+  T['args'] extends Arguments ? T['args'] : Empty,
   T['options'] extends Options ? T['options'] : Empty
 >;
 
-const printHelp = () => {
-  ns.tprint('HELP MESSAGE HERE');
-};
-
 // eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
-function errorExitWithHelp(errorMessage: string): never {
-  ns.tprint('ERROR: ' + errorMessage + '\n\n');
-  printHelp();
+function errorExitWithHelp(errorMessage: string, props: ProgramProps<any, any, any>): never {
+  ns.tprint('ERROR: ' + errorMessage + '\n');
+  printHelp(props);
   ns.exit();
 }
 
@@ -105,11 +97,13 @@ const parseInput = ({
   type,
   mode,
   name,
+  programProps,
 }: {
   input: string | number | boolean;
   type: 'string' | 'number';
   name: string;
   mode: 'option' | 'argument';
+  programProps: ProgramProps<any, any, any>;
 }): string | number => {
   switch (type) {
     case 'string':
@@ -118,6 +112,7 @@ const parseInput = ({
       if (!isValidNumber(input))
         errorExitWithHelp(
           `Expected a valid number for the ${mode} "${name}" but received "${input}".`,
+          programProps,
         );
 
       return Number(input);
@@ -131,59 +126,80 @@ type ExpectedOption<O extends Options = Options> = { name: keyof O & string } & 
 > & { type: Exclude<Option['type'], 'boolean'> };
 
 type ProgramReturn<R = unknown> = {
-  main: (ns: NS) => R;
+  main: (ns: NS) => R | void;
   autocomplete: (data: AutocompleteData, args: Args) => Array<string>;
 };
 
 export const program = <A extends Arguments, O extends Options, R = unknown>(
   props: ProgramProps<A, O, R>,
 ): ProgramReturn<R> => {
+  const extendedProps = {
+    ...props,
+    options: {
+      ...props.options,
+      help: {
+        type: 'boolean',
+        alias: 'h',
+        description: 'Display the help',
+      },
+    } as unknown as O,
+  };
+
+  const optionsArray = Object.entries(extendedProps.options).map(([name, opt]) => ({
+    ...opt,
+    name: name as keyof O & string,
+  }));
+
+  const argumentsArray = Object.entries(extendedProps.args ?? {}).map(([name, arg]) => ({
+    ...arg,
+    name: name as keyof A & string,
+  }));
+
   const main = (ns: NS) => {
     setNs(ns);
 
-    const resultingArguments: Partial<GetNamesAndTypes<A>> = {};
-    const resultingOptions: Partial<GetNamesAndTypes<O>> = {};
-
-    const optionsArray = Object.entries(props.options ?? {}).map((e) => ({
-      ...e[1],
-      name: e[0] as keyof O & string,
-    }));
-
+    const resultingArguments: Partial<GetTypes<A>> = {};
+    const resultingOptions: Partial<GetTypes<O>> = {};
+    const remainingArguments = [...argumentsArray];
     let expectedOptArg: ExpectedOption<O> | null = null;
 
-    const remainingArguments = Object.entries(props.arguments ?? {}).map((e) => ({
-      ...e[1],
-      name: e[0] as keyof A & string,
-    }));
-
     for (const arg of ns.args) {
+      // Check if it's an option's argument (the value you provide after a --option that expects a value for it)
       if (expectedOptArg) {
-        // Convert to string if we specified that the type is string but BitBurner implicitly converted to number
         const optionArgumentValue = parseInput({
           input: arg,
           type: expectedOptArg.type,
           mode: 'option',
           name: expectedOptArg.name,
+          programProps: extendedProps,
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resultingOptions[expectedOptArg.name] = optionArgumentValue as any;
+        resultingOptions[expectedOptArg.name] =
+          optionArgumentValue as (typeof resultingOptions)[typeof expectedOptArg.name];
         expectedOptArg = null;
-      } else if (typeof arg === 'string' && arg.startsWith('-')) {
+      }
+      // Check if it's an option (e.g. --option)
+      else if (typeof arg === 'string' && arg.startsWith('-')) {
         const isFullName = arg.startsWith('--');
         const optionWithoutDashes = arg.replace(/^-{1,2}/, '');
         const option = optionsArray.find((option) =>
           isFullName ? option.name === optionWithoutDashes : option.alias === optionWithoutDashes,
         );
 
-        if (!option) errorExitWithHelp(`The option "${optionWithoutDashes}" isn't a valid option.`);
+        if (!option)
+          errorExitWithHelp(
+            `The option "${optionWithoutDashes}" isn't a valid option.`,
+            extendedProps,
+          );
+        if (option.name === 'help') return printHelp(extendedProps as any);
         if (option.type === 'boolean') {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          resultingOptions[option.name] = true as any;
+          resultingOptions[option.name] = true as (typeof resultingOptions)[typeof option.name];
         } else {
           expectedOptArg = { ...option };
         }
-      } else if (remainingArguments[0]) {
+      }
+      // Check if it's an argument (e.g. <source>)
+      else if (remainingArguments[0]) {
         const argument = remainingArguments[0];
 
         remainingArguments.shift();
@@ -193,32 +209,36 @@ export const program = <A extends Arguments, O extends Options, R = unknown>(
           type: argument.type,
           mode: 'argument',
           name: argument.name,
+          programProps: extendedProps,
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resultingArguments[argument.name] = argumentValue as any;
-      } else {
-        errorExitWithHelp(`Received unexpected arg ${arg}.`);
+        resultingArguments[argument.name] =
+          argumentValue as (typeof resultingArguments)[typeof argument.name];
+      }
+      // Else, error
+      else {
+        errorExitWithHelp(`Received unexpected arg ${arg}.`, extendedProps);
       }
     }
 
-    if (remainingArguments[0]) {
-      errorExitWithHelp(`Missing value for the argument "${remainingArguments[0].name}".`);
-    }
+    if (remainingArguments[0])
+      errorExitWithHelp(
+        `Missing value for the argument "${remainingArguments[0].name}".`,
+        extendedProps,
+      );
 
-    if (expectedOptArg) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      errorExitWithHelp(`Missing value for the option "${expectedOptArg.name}".`);
-    }
+    if (expectedOptArg)
+      errorExitWithHelp(`Missing value for the option "${expectedOptArg.name}".`, extendedProps);
 
-    return props.main({
-      arguments: resultingArguments as GetNamesAndTypes<A>,
-      options: resultingOptions as GetNamesAndTypes<O>,
+    return extendedProps.main({
+      args: resultingArguments as GetTypes<A>,
+      options: resultingOptions as GetTypes<O>,
     });
   };
 
   return {
     main,
+    // TODO. Shouldn't be hard.
     autocomplete: (data, args) => [],
   };
 };

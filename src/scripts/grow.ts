@@ -1,16 +1,4 @@
-import type { AutocompleteData, NS } from '@ns';
-import type { Args } from 'scripts/lib/types';
+import { getCommonFunction } from 'scripts/lib/program/growHackWeakenCommon';
+import { ns } from 'scripts/lib/utils';
 
-export const main = async (ns: NS) => {
-  while (true) {
-    const growth = await ns.grow(ns.args[0] as string, { additionalMsec: ns.args[1] as number });
-
-    if (ns.args.find((arg) => arg === '-s')) {
-      ns.toast(`Finished, grown by ${ns.formatNumber(growth)}`, 'success');
-
-      return;
-    }
-  }
-};
-
-export const autocomplete = (data: AutocompleteData, args: Args) => data.servers;
+export const { main, autocomplete } = getCommonFunction(ns.grow);
