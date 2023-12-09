@@ -4,6 +4,7 @@
     "types": ["bun-types"],
     "module": "esnext",
     "target": "esnext",
+    "lib": ["esnext"],
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "esModuleInterop": true,
@@ -11,21 +12,16 @@
     "noUncheckedIndexedAccess": true,
     "inlineSources": true,
     "strict": true,
-    "rootDir": "src/",
     "outDir": "dist/",
+    "rootDir": "src/",
     "baseUrl": "src/",
     "allowJs": true,
-    "jsx": "react",
     "paths": {
       "/*": ["*"],
-      "@ns": ["../NetscriptDefinitions.d.ts"],
-      "@react": ["scripts/lib/react.ts"]
+      "@ns": ["../NetscriptDefinitions.d.ts"]
     },
-    "lib": ["esnext"],
 
     "moduleResolution": "bundler",
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
     "moduleDetection": "force",
 
     "forceConsistentCasingInFileNames": true,
