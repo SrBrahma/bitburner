@@ -8,7 +8,7 @@
     "watch:init": "node build/init.js",
     "test:watch": "npm run test --watch",
     "typecheck": "tsc --noEmit",
-    "prettier:write": "prettier --write --log-level warn .",
+    "prettier:write": "prettier --write --log-level warn ./**/*.{ts,js}",
     "lint:write": "eslint --fix .",
     "format": "npm run typecheck && npm run lint:write && npm run prettier:write",
     "watch:all": "concurrently -c \"npm run watch:transpile\" \"npm run watch:remote\"",
