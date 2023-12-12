@@ -1,6 +1,7 @@
 import { program } from 'scripts/lib/program/program';
 import { ns } from 'scripts/lib/utils';
 
+console.log('AAA');
 export const getCommonFunction = ({
   fun,
   path,

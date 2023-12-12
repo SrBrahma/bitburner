@@ -4,6 +4,7 @@ import { ns } from 'scripts/lib/utils';
 
 export const Servers = {
   servers: [],
+  serversButHome: [],
   seed: (serversButHome: ServersList) => {
     const sourceFiles = ns.ls('home', 'scripts/');
 
@@ -35,6 +36,7 @@ export const Servers = {
   },
 
   getAllServers: () => {
+    ns.tprint('AAAA');
     const scan = (host: string, servers: Set<string>) => {
       if (!servers.has(host)) {
         servers.add(host);
@@ -44,7 +46,7 @@ export const Servers = {
       return servers;
     };
 
-    const servers = [...scan('home', new Set()).values()];
+    const servers = [...scan('home', new Set('home')).values()];
 
     return {
       servers,

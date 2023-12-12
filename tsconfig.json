@@ -1,7 +1,6 @@
 {
   "include": ["NetscriptDefinitions.d.ts", "src/**/*"],
   "compilerOptions": {
-    "types": ["bun-types"],
     "module": "esnext",
     "target": "esnext",
     "lib": ["esnext"],
@@ -12,8 +11,8 @@
     "noUncheckedIndexedAccess": true,
     "inlineSources": true,
     "strict": true,
-    "outDir": "dist/",
     "rootDir": "src/",
+    "outDir": "dist/",
     "baseUrl": "src/",
     "allowJs": true,
     "paths": {
@@ -21,7 +20,7 @@
       "@ns": ["../NetscriptDefinitions.d.ts"]
     },
 
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "moduleDetection": "force",
 
     "forceConsistentCasingInFileNames": true,
