@@ -1,8 +1,8 @@
-import { scripts } from 'scripts/lib/scripts';
-import { Servers } from 'scripts/lib/servers';
-import type { HWGW, HWGWSteps, StepData } from 'scripts/lib/steps';
-import type { ServersList } from 'scripts/lib/types';
-import { ns } from 'scripts/lib/utils';
+import { scripts } from 'lib/scripts';
+import { Servers } from 'lib/servers';
+import type { HWGW, HWGWSteps, StepData } from 'lib/steps';
+import type { ServersList } from 'lib/types';
+import { ns } from 'lib/utils';
 
 type ScheduledStepData = StepData & {
   host: string;

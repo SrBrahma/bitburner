@@ -1,9 +1,10 @@
 {
-  "include": ["NetscriptDefinitions.d.ts", "src/**/*"],
+  "include": ["src/**/*"],
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",
     "lib": ["esnext"],
+    "types": ["bun-types"],
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "esModuleInterop": true,
@@ -16,8 +17,7 @@
     "baseUrl": "src/",
     "allowJs": true,
     "paths": {
-      "/*": ["*"],
-      "@ns": ["../NetscriptDefinitions.d.ts"]
+      "/*": ["*"]
     },
 
     "moduleResolution": "node",

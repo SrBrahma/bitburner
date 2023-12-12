@@ -1,5 +1,5 @@
-import type { Option, ProgramProps } from 'scripts/lib/program/program';
-import { ns } from 'scripts/lib/utils';
+import type { Option, ProgramProps } from 'lib/program/program';
+import { ns } from 'lib/utils';
 
 export const printHelp = (props: ProgramProps) => {
   const optionsArray = Object.entries(props.options ?? {}).map((e) => ({

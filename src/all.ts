@@ -1,12 +1,12 @@
-import { program } from 'scripts/lib/program/program';
-import { runSuperSchedule } from 'scripts/lib/schedule';
-import { Server } from 'scripts/lib/server';
-import { Servers } from 'scripts/lib/servers';
-import { getHWGWSteps } from 'scripts/lib/steps';
-import { ns, printTable } from 'scripts/lib/utils';
+import { program } from 'lib/program/program';
+import { runSuperSchedule } from 'lib/schedule';
+import { Server } from 'lib/server';
+import { Servers } from 'lib/servers';
+import { getHWGWSteps } from 'lib/steps';
+import { ns, printTable } from 'lib/utils';
 
 export const { main, path } = program({
-  path: 'scripts/all.ts',
+  path: 'all.ts',
   main: async () => {
     const modes = getModes();
 

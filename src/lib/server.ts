@@ -1,5 +1,5 @@
-import { scripts } from 'scripts/lib/scripts';
-import { ns } from 'scripts/lib/utils';
+import { scripts } from 'lib/scripts';
+import { ns } from 'lib/utils';
 
 export class Server {
   // TODO gather servers to run it together

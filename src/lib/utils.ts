@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NS } from '@ns';
-import { printHelp } from 'scripts/lib/program/help';
-import type { ProgramProps } from 'scripts/lib/program/program';
+import { printHelp } from 'lib/program/help';
+import type { ProgramProps } from 'lib/program/program';
+
+import type { NS } from '/NetscriptDefinitions';
 
 export let ns: NS;
 

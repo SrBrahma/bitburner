@@ -1,4 +1,5 @@
-import type { NS } from '../../../../NetscriptDefinitions';
+import { expect, jest, test } from 'bun:test';
+import type { NS } from '../../NetscriptDefinitions';
 import type { MainProps, ProgramProps } from './program';
 import { program } from './program';
 

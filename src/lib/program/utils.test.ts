@@ -1,3 +1,4 @@
+import { expect, test } from 'bun:test';
 import { getArgsString } from './utils';
 
 test('getArgsString works', () => {

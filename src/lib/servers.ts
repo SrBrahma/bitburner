@@ -1,12 +1,12 @@
-import { Server } from 'scripts/lib/server';
-import type { ServersList } from 'scripts/lib/types';
-import { ns } from 'scripts/lib/utils';
+import { Server } from 'lib/server';
+import type { ServersList } from 'lib/types';
+import { ns } from 'lib/utils';
 
 export const Servers = {
   servers: [],
   serversButHome: [],
   seed: (serversButHome: ServersList) => {
-    const sourceFiles = ns.ls('home', 'scripts/');
+    const sourceFiles = ns.ls('home', '');
 
     serversButHome.forEach((host) => {
       const filesToBeRemoved = ns.ls(host, '.js');

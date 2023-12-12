@@ -1,6 +1,6 @@
-import { scripts } from 'scripts/lib/scripts';
-import { Server } from 'scripts/lib/server';
-import { ns } from 'scripts/lib/utils';
+import { scripts } from 'lib/scripts';
+import { Server } from 'lib/server';
+import { ns } from 'lib/utils';
 
 console.log('BBB');
 export type StepData = {

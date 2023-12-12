@@ -1,5 +1,5 @@
-import { program } from 'scripts/lib/program/program';
-import { ns } from 'scripts/lib/utils';
+import { program } from 'lib/program/program';
+import { ns } from 'lib/utils';
 
 console.log('AAA');
 export const getCommonFunction = ({

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as growProgram from 'scripts/grow';
-import * as hackProgram from 'scripts/hack';
-import type { Program } from 'scripts/lib/program/program';
-import { ns } from 'scripts/lib/utils';
-import * as weakenProgram from 'scripts/weaken';
+import * as growProgram from 'grow';
+import * as hackProgram from 'hack';
+import type { Program } from 'lib/program/program';
+import { ns } from 'lib/utils';
+import * as weakenProgram from 'weaken';
 
 type Script<T extends Program> = Pick<T, 'exec' | 'path'> & {
   ram: number;

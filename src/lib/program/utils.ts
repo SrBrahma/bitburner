@@ -5,8 +5,8 @@ import type {
   GetOptionsTypes,
   Options,
   ProgramProps,
-} from 'scripts/lib/program/program';
-import { errorExitWithHelp } from 'scripts/lib/utils';
+} from 'lib/program/program';
+import { errorExitWithHelp } from 'lib/utils';
 
 export const isValidNumber = (value: unknown) =>
   typeof value === 'number'

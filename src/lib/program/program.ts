@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { printHelp } from 'scripts/lib/program/help';
-import { getArgsString, parseInput } from 'scripts/lib/program/utils';
-import type { OptionalKey } from 'scripts/lib/types';
-import { errorExitWithHelp, ns, setNs } from 'scripts/lib/utils';
-import type { AutocompleteData, NS, RunOptions } from '../../../../NetscriptDefinitions';
+import { printHelp } from 'lib/program/help';
+import { getArgsString, parseInput } from 'lib/program/utils';
+import type { OptionalKey } from 'lib/types';
+import { errorExitWithHelp, ns, setNs } from 'lib/utils';
+import type { AutocompleteData, NS, RunOptions } from '../../NetscriptDefinitions';
 
 type Argument = {
   description?: string;
@@ -82,7 +82,7 @@ export type ProgramProps<
    * The path from the server's root ('/') to the program file.
    *
    * Used in the program's returning .exec and also returned by program() for further usages.
-   * @example 'scripts/hack.js'
+   * @example 'hack.js'
    */
   path?: string;
   /** The description of this program. Shown on --help. */
