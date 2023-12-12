@@ -1,7 +1,6 @@
-import { expect, jest, test } from 'bun:test';
-import type { MainProps, ProgramProps } from 'scripts/lib/program/program';
-import { program } from 'scripts/lib/program/program';
 import type { NS } from '../../../../NetscriptDefinitions';
+import type { MainProps, ProgramProps } from './program';
+import { program } from './program';
 
 const mockNs = (props: Partial<NS>) =>
   ({
@@ -125,7 +124,7 @@ test('have --help and -h options and display the help', () => {
   });
 
   let weGot: string | undefined;
-  const tprint = jest.fn((e) => {
+  const tprint = jest.fn((e: string) => {
     weGot = e;
   });
   const text = `This is a cool program that does cool stuff.

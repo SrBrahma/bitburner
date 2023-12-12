@@ -1,5 +1,4 @@
-import { expect, test } from 'bun:test';
-import { getArgsString } from 'scripts/lib/program/utils';
+import { getArgsString } from './utils';
 
 test('getArgsString works', () => {
   expect(

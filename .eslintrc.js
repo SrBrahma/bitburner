@@ -16,17 +16,31 @@ module.exports = {
       parser: '@typescript-eslint/parser',
       parserOptions: {
         tsconfigRootDir: __dirname,
-        project: ['./tsconfig.json'],
+        project: ['./tsconfig.test.json'],
         ecmaVersion: 12,
         sourceType: 'module',
       },
       rules: {
         '@typescript-eslint/require-await': 'off',
         '@typescript-eslint/no-unsafe-assignment': 'off',
-        'arrow-body-style': 'warn',
+      },
+    },
+    {
+      files: ['*.test.ts'],
+      extends: ['eslint-config-gev/ts'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        project: ['./tsconfig.json'],
+        ecmaVersion: 12,
+        sourceType: 'module',
+      },
+      rules: {
+        'no-relative-import-paths/no-relative-import-paths': 'off',
       },
     },
   ],
+
   ignorePatterns: ['/lib/**/*', '/dist/**/*', '/NetscriptDefinitions.d.ts'],
   rules: {},
 };

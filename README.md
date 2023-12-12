@@ -5,8 +5,6 @@ My codes for [BitBurner](https://store.steampowered.com/app/1812820/Bitburner/) 
 ## Quick start
 
 - Do the following steps https://github.com/bitburner-official/typescript-template/blob/main/BeginnersGuide.md. Instead of downloading the linked template, download this repo you are reading now!
-- This repo uses Bun instead of NPM. Install it: https://bun.sh/docs/installation. Windows users need WSL for it, as Bun doesn't support Windows yet.
-  - You can also ignore Bun and just use NPM/Yarn/PNPM. If NPM, for example, you will need to rename the `bun` in `package.json`'s `scripts` to `npm run`.
 
 ## [src/scripts/lib/program.ts](https://github.com/SrBrahma/bitburner/blob/main/src/scripts/lib/program/program.ts)
 
